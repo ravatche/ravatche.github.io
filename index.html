@@ -251,7 +251,7 @@ function updateTotal() {
 }
 
 const questions = {
-    "Cardapio 01": [
+    "Ativo": [
         {
             text: "Selecione um período",
             timeText: "Período disponível:",
@@ -286,7 +286,7 @@ const questions = {
             type: "checkbox"
         }
     ],
-    "Cardapio 02": [
+    "Flex": [
         {
             text: "Selecione um período",
             timeText: "",
@@ -321,7 +321,7 @@ const questions = {
             type: "checkbox"
         }
     ],
-    "Cardapio 03": [
+    "Passivo": [
         {
             text: "Selecione um período",
             timeText: "Período disponível:",
@@ -465,9 +465,9 @@ function submitForm() {
                 <div id="box1">
                     <h3>Preferências</h3>
                     <div class="cardapio-selection">
-                        <div class="cardapio" data-cardapio="Cardapio 01">Ativo</div>
-                        <div class="cardapio" data-cardapio="Cardapio 02">Flex</div>
-                        <div class="cardapio" data-cardapio="Cardapio 03">Passivo</div>
+                        <div class="cardapio" data-cardapio="Ativo">Ativo</div>
+                        <div class="cardapio" data-cardapio="Flex">Flex</div>
+                        <div class="cardapio" data-cardapio="Passivo">Passivo</div>
                     </div>
                     <input type="hidden" id="selected-cardapio" name="selected-cardapio" required>
                     <div class="container">
