@@ -1,11 +1,493 @@
+
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio</title>
+    <title>Cardápio e Agendamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #000000, #8B0000);
+            color: #ffffff;
+        }
+        h1 {
+            text-align: center;
+        }
+        #box {
+            padding: 5px;
+            border: 1px solid #f33333;
+            background: linear-gradient(to bottom, #8B0000, #000000);
+            color: #e3f7b7;
+        }
+        #box1 {
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #f33333;
+            background: linear-gradient(to bottom, #000000, #8B0000);
+            color: #ffffff;
+        }
+        #form-container {
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Altura total da janela */
+        }
+
+        .box2 {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px;
+            background: linear-gradient(to bottom, #8B0000, #000000);
+            width: 80%; /* Ajuste conforme necessário */
+            max-width: 600px; /* Limite a largura máxima */
+        }
+
+        .questions-container {
+            text-align: left;
+        }
+
+        .questions-container .question {
+            margin-bottom: 20px;
+        }
+
+        .questions-container .question label {
+            display: block;
+            margin: 5px 0;
+        }
+
+        .questions-container .options {
+            padding-left: 20px; /* Indenta as opções */
+        }
+
+        .questions-container .options label {
+            display: block;
+            margin: 5px 0;
+        }
+                .question {
+            margin-bottom: 15px;
+        }
+        .question label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+        }
+        .options label {
+            margin-bottom: 5px;
+        }
+        #total-box {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            background-color: #f1f526;
+            color: rgb(153, 45, 45);
+            text-align: center;
+            padding: 5px;
+            margin: 1px;
+            box-shadow: -2px 2px 5px rgba(222, 245, 121, 0.863);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.5;
+            }
+        }
+        #form-container input[type="number"] {
+            margin-bottom: 15px;
+        }
+        .button-enviar {
+            width: 100%;
+            display: inline-block;
+            padding: 10px 20px;
+            background: #7af585;
+            color: #3d13a0;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            animation: pulse 1.5s infinite;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+        .cardapio-selection {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .cardapio {
+            flex: 1;
+            margin: 0 10px;
+            padding: 20px;
+            background: #333;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .cardapio:hover {
+            background: #555;
+        }
+        .cardapio.active {
+            background: #8B0000;
+        }
+        /* Estilo geral para dispositivos móveis */
+@media (max-width: 768px) {
+    body {
+        padding: 0 10px;
+    }
+
+    #box, #box1 {
+        padding: 10px;
+        border: none;
+        background: none;
+    }
+
+    #box1 {
+        margin-top: 20px;
+    }
+
+    .cardapio-selection {
+        flex-direction: column;
+    }
+
+    .cardapio {
+        margin: 10px 0;
+    }
+
+    #form-container {
+        padding: 10px;
+    }
+
+    #total-box {
+        position: static;
+        background-color: #8B0000;
+        color: #ffffff;
+        padding: 10px;
+        box-shadow: none;
+    }
+
+    .button-enviar {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .question input[type="text"], .question input[type="number"], .question select {
+        width: 100%;
+    }
+
+    .question label {
+        font-size: 14px;
+    }
+
+    .options label {
+        font-size: 14px;
+    }
+}
+
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    // Define a data e hora mínima para o campo de data e hora como a data e hora atual
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Meses começam do 0
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('AgendaData').setAttribute('min', minDateTime);
+
+    // Adiciona os eventos e outras configurações
+    document.querySelectorAll('.cardapio').forEach(cardapio => {
+        cardapio.addEventListener('click', function() {
+            document.querySelectorAll('.cardapio').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('selected-cardapio').value = this.dataset.cardapio;
+            loadQuestions(this.dataset.cardapio);
+        });
+    });
+
+    document.getElementById('localizacao').addEventListener('change', updateTotal);
+});
+
+function validateDateTime() {
+    const agora = new Date();
+    const data = new Date(document.getElementById('AgendaData').value);
+    if (data < agora) {
+        alert('Selecione uma data e hora futuras.');
+        return false;
+    }
+    return true;
+}
+
+function updateTotal() {
+    const selectedOptions = document.querySelectorAll('input[type="radio"]:checked, input[type="checkbox"]:checked');
+    let total = 0;
+    
+    selectedOptions.forEach(option => {
+        total += parseFloat(option.value);
+    });
+
+    // Adiciona o valor da localização
+    const localizacaoSelect = document.getElementById('localizacao');
+    const localizacaoValue = parseFloat(localizacaoSelect.value.replace('R$', '').replace(',', '.')) || 0;
+    total += localizacaoValue;
+
+    document.getElementById('total').textContent = `R$${total.toFixed(2)}`;
+}
+
+const questions = {
+    "Cardapio 01": [
+        {
+            text: "Selecione um período",
+            timeText: "Período disponível:",
+            valueText: "",
+            options: [
+                "Oral 15 Min R$ 50,00",
+                "20 Minutos R$ 80,00",
+                "40 Minutos R$ 100,00",
+                "1 Hora R$ 150,00",
+                "2 Hora R$ 300,00",
+                "3 Hora R$ 450,00",
+                "4 Hora R$ 600,00",
+                "1 Hora R$ 750,00",
+                "2 Hora R$ 900,00"
+            ],
+            type: "radio"
+        },
+        {
+            text: "Escolha adicional",
+            timeText: "Tempo adicional:",
+            valueText: "",
+            options: [
+                "Fucktroath R$ 10,00",
+                "Deepthroat R$ 20,00",
+                "cumswallow R$ 30,00",
+                "Spit R$ 40,00",
+                "Fuckdoll R$ 50,00",
+                "Piss Sports R$ 60,00",
+                "PetPlay R$ 70,00",
+                "Spaking R$ 80,00"
+            ],
+            type: "checkbox"
+        }
+    ],
+    "Cardapio 02": [
+        {
+            text: "Selecione um período",
+            timeText: "",
+            valueText: "",
+            options: [
+                "'69' 15 Min R$ 70,00",
+                "20 Minutos R$ 80,00",
+                "40 Minutos R$ 100,00",
+                "1 Hora R$ 150,00",
+                "2 Hora R$ 300,00",
+                "3 Hora R$ 450,00",
+                "4 Hora R$ 600,00",
+                "1 Hora R$ 750,00",
+                "2 Hora R$ 900,00"
+            ],
+            type: "radio"
+        },
+        {
+            text: "Escolha adicional",
+            timeText: ":",
+            valueText: "",
+            options: [
+                "Adicional 01 R$ 10,00",
+                "Adicional 02 R$ 20,00",
+                "Adicional 03 R$ 30,00",
+                "Adicional 04 R$ 40,00",
+                "Adicional 05 R$ 50,00",
+                "Adicional 06 R$ 60,00",
+                "Adicional 07 R$ 70,00",
+                "Adicional 08 R$ 80,00"
+            ],
+            type: "checkbox"
+        }
+    ],
+    "Cardapio 03": [
+        {
+            text: "Selecione um período",
+            timeText: "Período disponível:",
+            valueText: "",
+            options: [
+                "Oral 15 Min R$ 50,00",
+                "20 Minutos R$ 150,00",
+                "40 Minutos R$ 200,00",
+                "1 Hora R$ 250,00",
+                "2 Hora R$ 500,00",
+                "3 Hora R$ 750,00",
+                "4 Hora R$ 900,00",
+                "5 Hora R$ 1250,00",
+                " Hora R$ 1500,00"
+            ],
+            type: "radio"
+        },
+        {
+            text: "Escolha adicional",
+            timeText: "Tempo adicional:",
+            valueText: "",
+            options: [
+                "Fucktroath R$ 10,00",
+                "Deepthroat R$ 20,00",
+                "cumswallow R$ 100,00",
+                "Spit R$ 10,00",
+                "Fuckdoll R$ 10,00",
+                "Piss Sports R$ 60,00",
+                "PetPlay R$ 70,00",
+                "Spaking R$ 50,00"
+            ],
+            type: "checkbox"
+        }
+    ]
+};
+function loadQuestions(cardapio) {
+    const questionsContainer = document.getElementById('questions-container');
+    questionsContainer.innerHTML = '';
+
+    const questionsList = questions[cardapio];
+    questionsList.forEach((question, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question';
+        questionDiv.innerHTML = `
+            <label for="question${index + 1}">${question.text}:</label><br>
+            <span>${question.timeText}</span><br>
+            <span>${question.valueText}</span>
+            <div class="options">
+                ${question.options.map((option, i) =>
+                    question.type === "radio"
+                        ? `<label>
+                             <input type="radio" name="question${index + 1}" value="${parseFloat(option.split('R$')[1].replace(',', '.'))}" onchange="updateTotal()"> 
+                             ${option}
+                           </label>`
+                        : `<label>
+                             <input type="checkbox" name="question${index + 1}" value="${parseFloat(option.split('R$')[1].replace(',', '.'))}" onchange="updateTotal()"> 
+                             ${option}
+                           </label>`
+                ).join('')}
+            </div>
+        `;
+        questionsContainer.appendChild(questionDiv);
+    });
+}
+
+function submitForm() {
+    if (!validateDateTime()) {
+        return;
+    }
+
+    const nome = document.getElementById('nome').value;
+    const idade = document.getElementById('idade').value;
+    const especificacao = document.getElementById('especificacao').value;
+    const selectedCardapio = document.getElementById('selected-cardapio').value;
+
+    // Verifica se todos os campos obrigatórios estão preenchidos
+    if (!nome || !idade || !selectedCardapio) {
+        alert('Por favor, preencha todos os campos obrigatórios.');
+        return;
+    }
+
+    // Verifica se pelo menos um período foi selecionado
+    const periodoSelecionado = document.querySelector('input[type="radio"]:checked');
+    if (!periodoSelecionado) {
+        alert('Por favor, selecione ao menos um período.');
+        return;
+    }
+
+    // Formata as opções selecionadas
+    const periodo = Array.from(document.querySelectorAll('input[type="radio"]:checked'))
+        .map(option => option.parentElement.innerText)
+        .join('; ');
+
+    const adicionais = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+        .map(option => option.parentElement.innerText)
+        .join('; ');
+
+    const dataHora = document.getElementById('AgendaData').value;
+    const localizacao = document.getElementById('localizacao').value;
+    const total = document.getElementById('total').textContent;
+
+    const mensagem = ` *SSC - Agendamento* \n> Seguro, são e consensual (SSC)\n\nMe chamo: ${nome}\nIdade: ${idade}\nEspecificação: ${especificacao}\nEu sou: ${selectedCardapio}\nPeríodo: ${periodo}\nAdicionais: ${adicionais}\nData e Hora: ${dataHora}\nLocalização: ${localizacao}\nTotal: ${total}`;
+
+    // Envia mensagem pelo WhatsApp
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=5512982572507&text=${encodeURIComponent(mensagem)}`;
+    window.open(whatsappUrl, '_blank');
+}
+    </script>
 </head>
 <body>
-    <h1>Inicio</h1>
+    <div id="form-container">
+        <h1>Cardápio e Agendamento</h1>
+        <div id="box">
+            <form id="menu-form" method="post">
+                <div id="box1">
+                    <h3>Informações Pessoais</h3>
+                    <label for="nome">Nome:</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Nome"><br>
+                    <label for="idade">Idade:</label>
+                    <input type="number" id="idade" name="idade" required placeholder="Qual é a sua idade?"><br>
+                    <label for="AgendaData">Escolha a data e hora:</label><br>
+                    <input type="datetime-local" id="AgendaData" name="AgendaData" required>
+                    <input type="hidden" id="periodo" name="periodo">
+                    <input type="hidden" id="valor" name="valor">
+                    <br>
+                    <label for="localizacao">Localização:</label><br>
+                    <select id="localizacao" name="localizacao" required>
+                        <option value="" disabled selected>Selecione a localização</option>
+                        <option value="R$0,00">No meu local - Sem taxa</option>
+                        <option value="R$50,00">São José dos Campos - Centro - R$30,00</option>
+                        <option value="R$50,00">São José dos Campos - Leste - R$50,00</option>
+                        <option value="R$50,00">São José dos Campos - Oeste - R$50,00</option>
+                        <option value="R$50,00">São José dos Campos - Sul - R$50,00</option>
+                        <option value="R$50,00">São José dos Campos - Norte - R$50,00</option>
+                        <option value="R$100,00">Jacareí - R$100,00</option>
+                        <option value="R$100,00">Taubaté - R$100,00</option>
+                        <option value="R$0,00">No Carro - Sem taxa</option>
+                        <option value="A verificar">Outra - A verificar</option>
+                    </select>
+                </div>
+                <div id="box1">
+                    <h3>Preferências</h3>
+                    <div class="cardapio-selection">
+                        <div class="cardapio" data-cardapio="Cardapio 01">Ativo</div>
+                        <div class="cardapio" data-cardapio="Cardapio 02">Flex</div>
+                        <div class="cardapio" data-cardapio="Cardapio 03">Passivo</div>
+                    </div>
+                    <input type="hidden" id="selected-cardapio" name="selected-cardapio" required>
+                    <div class="container">
+                        <div class="box2">
+                            <div id="questions-container" class="questions-container"></div>
+                        </div>
+                    </div>                    
+                    <br>
+                    <div class="question">
+                        <label for="especificacao">Especificação (opcional):</label>
+                        <input type="text" id="especificacao" name="especificacao" placeholder="Alguma especificação?">
+                    </div>
+                    <div id="total-box">
+                        <span>Total: <span id="total">R$0,00</span></span>
+                    </div>
+                    <br>
+                    <button type="button" class="button-enviar" onclick="submitForm()">Enviar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
